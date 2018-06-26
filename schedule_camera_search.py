@@ -1,6 +1,7 @@
 """
 Scheduling of camera checking.
 """
+import logging
 import time
 
 from requests.exceptions import ReadTimeout, ConnectionError, HTTPError

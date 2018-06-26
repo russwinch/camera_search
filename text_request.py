@@ -26,8 +26,7 @@ def text_message(debug=False, message=None):
     if message:
         r = requests.post(url, auth=auth, data=payload)
         if r.status_code != 201:
-            raise HTTPError("HTTP Error {}".format(r.status_code))
-            # log r.json()
+            raise HTTPError(f"HTTP Error {r.status_code}: {r.json()}")
     return r
 
 

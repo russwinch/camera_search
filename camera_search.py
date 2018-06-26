@@ -11,7 +11,7 @@ def find_cameras(target_condition=['9+']):
     """
     Find cameras in a webpage and determine if they match the condition.
 
-    :target_condition: the requested condition of the camera
+    :target_condition: a list of the desired conditions the camera can be in
     """
     url = 'https://www.wexphotovideo.com/used-dslrs/?esp_category_filter_Manufacturer=Canon&esp_category_filter_Model=EOS%205D%20Mk%20III&esp_category_filter_StockStatus=1&esp_category_filter_StockStatus=2&esp_category_filter_StockStatus=11&facetMode=data'
     response = requests.get(url, timeout=5)
@@ -23,18 +23,15 @@ def find_cameras(target_condition=['9+']):
 
     found_cameras = []
     for camera in cameras:
-        condition = camera.find(class_='condition')
-        matched_condition = next((x for x in target_condition if x in
-                                 str(condition)), False)
-        if matched_condition:
-            price = camera.find(class_='price').string
-            href = camera.a['href']
-            if not _check_found_cameras(cid=href,
-                                        filepath=config.file_location):
-                found_cameras.append({'condition': matched_condition,
-                                      'price': price,
-                                      'href': href})
-
+        condition = camera.find(class_='condition').span.string
+        price = camera.find(class_='price').string
+        href = camera.a['href']
+        if (condition in target_condition
+            and not _check_found_cameras(cid=href,
+                                         filepath=config.file_location)):
+            found_cameras.append({'condition': condition,
+                                  'price': price,
+                                  'href': href})
     return found_cameras
 
 
