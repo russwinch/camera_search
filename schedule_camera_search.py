@@ -1,31 +1,38 @@
 """
-Scheduling of camera checking with threading.
-
+Scheduling of camera checking.
 """
-from threading import Thread
 import time
 
 from requests.exceptions import ReadTimeout, ConnectionError, HTTPError
 import schedule
 
-from camera_search import find_cameras
+from camera_search import find_cameras, write_found_cameras
 from text_request import text_message
+import instance.config as config
 
 
 def camera_check():
     try:
         found = find_cameras(target_condition=['9+', '9<'])
+        # found = find_cameras(target_condition=['6', '8<']) # for testing
         if found:
-            res = text_message(#debug=True,
-                               message=f"Camera(s) found! {str(found)}")
+            cameras = [str(f'{x[0]} @ {x[1]}') for x in found]
+            response = text_message(debug=True,
+                                    message=f"Camera(s) found! {cameras}")
             print(found)
-            print(res.text)
+            print(response.json()['body'])
+
         else:
             # log check
             print("Found nothing...")
     except (ConnectionError, ReadTimeout, HTTPError) as e:
         print(e)
         # log this
+    else:
+        # write id of camera to external file so message is not sent again
+        found_cids = [x[2] for x in found]
+        for c in found_cids:
+            write_found_cameras(cid=c, filepath=config.file_location)
 
 
 def create_schedule(job, *args, interval=15, units='minutes', **kwargs):
@@ -40,26 +47,16 @@ def create_schedule(job, *args, interval=15, units='minutes', **kwargs):
     sched.do(job, *args, **kwargs)
 
 
-def threaded_schedule_run():
-    """
-    Keep checking for the schedule to be due and run it.
-    """
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
-
 if __name__ == '__main__':
     create_schedule(camera_check,
                     # interval=15, # for test purposes only
                     # units='seconds')  # for test purposes only
-                    interval=1, # for test purposes only
+                    interval=1,
                     units='hours')
 
-    # run the update now in it's own thread
-    s = Thread(target=schedule.run_all())
-    s.start()
-    # thread the check for subsequent updates
-    t = Thread(target=threaded_schedule_run)
-    t.start()
+    # run the update now
+    schedule.run_all()
 
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

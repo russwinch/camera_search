@@ -1,5 +1,10 @@
+"""
+Searches for used Canon 5D Mk III on wexphotovideo.com.
+"""
 from bs4 import BeautifulSoup
 import requests
+
+import instance.config as config
 
 
 def find_cameras(target_condition=['9+']):
@@ -18,9 +23,26 @@ def find_cameras(target_condition=['9+']):
                                  str(condition)), False)
         if matched_condition:
             price = camera.find(class_='price').string
-            found_cameras.append((matched_condition, price))
+            href = camera.a['href']
+            if not _check_found_cameras(cid=href,
+                                        filepath=config.file_location):
+                found_cameras.append((matched_condition, price, href))
 
     return found_cameras
+
+
+def _check_found_cameras(cid=None, filepath=None):
+    with open(filepath, mode='r') as f:
+        found = False
+        for line in f:
+            if line.strip() == cid:
+                found = True
+        return found
+
+
+def write_found_cameras(cid=None, filepath=None):
+    with open(filepath, mode='a') as f:
+        f.write(str(cid) + '\n')
 
 
 if __name__ == '__main__':
