@@ -8,6 +8,11 @@ import instance.config as config
 
 
 def find_cameras(target_condition=['9+']):
+    """
+    Find cameras in a webpage and determine if they match the condition.
+
+    :target_condition: the requested condition of the camera
+    """
     url = 'https://www.wexphotovideo.com/used-dslrs/?esp_category_filter_Manufacturer=Canon&esp_category_filter_Model=EOS%205D%20Mk%20III&esp_category_filter_StockStatus=1&esp_category_filter_StockStatus=2&esp_category_filter_StockStatus=11&facetMode=data'
     response = requests.get(url, timeout=5)
     response_dict = response.json()
@@ -26,12 +31,20 @@ def find_cameras(target_condition=['9+']):
             href = camera.a['href']
             if not _check_found_cameras(cid=href,
                                         filepath=config.file_location):
-                found_cameras.append((matched_condition, price, href))
+                found_cameras.append({'condition': matched_condition,
+                                      'price': price,
+                                      'href': href})
 
     return found_cameras
 
 
 def _check_found_cameras(cid=None, filepath=None):
+    """
+    Compare identified cameras with the list of those found previously.
+
+    :cid: the url of the camera, used as it's unique id
+    :filepath: the local file where previously identified cameras are recorded
+    """
     with open(filepath, mode='r') as f:
         found = False
         for line in f:
@@ -41,6 +54,12 @@ def _check_found_cameras(cid=None, filepath=None):
 
 
 def write_found_cameras(cid=None, filepath=None):
+    """"
+    Write to the local file of previously identified cameras.
+
+    :cid: the url of the camera, used as it's unique id
+    :filepath: the local file where previously identified cameras are recorded
+    """
     with open(filepath, mode='a') as f:
         f.write(str(cid) + '\n')
 

@@ -3,6 +3,13 @@ from requests.exceptions import HTTPError
 
 
 def text_message(debug=False, message=None):
+    """
+    Sends a text message using Twilio.
+    Returns the response from the api
+
+    :debug: uses test crededntials from the config file
+    :message: the string to send in the text message
+    """
     if debug:
         from instance.config import test as config
     else:

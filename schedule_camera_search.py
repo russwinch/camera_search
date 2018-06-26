@@ -12,16 +12,19 @@ import instance.config as config
 
 
 def camera_check():
+    """
+    Checks for new cameras and sends a text message if any are found.
+    """
     try:
         found = find_cameras(target_condition=['9+', '9<'])
-        # found = find_cameras(target_condition=['6', '8<']) # for testing
+        # found = find_cameras(target_condition=['6', '8']) # for testing
         if found:
-            cameras = [str(f'{x[0]} @ {x[1]}') for x in found]
+            cameras = [f"condition {x['condition']} @ {x['price']}"
+                        for x in found]
             response = text_message(debug=True,
                                     message=f"Camera(s) found! {cameras}")
             print(found)
             print(response.json()['body'])
-
         else:
             # log check
             print("Found nothing...")
@@ -30,7 +33,7 @@ def camera_check():
         # log this
     else:
         # write id of camera to external file so message is not sent again
-        found_cids = [x[2] for x in found]
+        found_cids = [x['href'] for x in found]
         for c in found_cids:
             write_found_cameras(cid=c, filepath=config.file_location)
 
@@ -51,8 +54,8 @@ if __name__ == '__main__':
     create_schedule(camera_check,
                     # interval=15, # for test purposes only
                     # units='seconds')  # for test purposes only
-                    interval=1,
-                    units='hours')
+                    interval=30,
+                    units='minutes')
 
     # run the update now
     schedule.run_all()
