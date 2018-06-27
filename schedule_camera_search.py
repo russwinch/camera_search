@@ -21,7 +21,7 @@ logging.basicConfig(handlers=(log_stream_handler, log_file_handler),
                     format="%(asctime)s:%(levelname)s:%(message)s")
 
 
-def camera_check(target_condition=None):
+def camera_check(target_condition=None, debug=False):
     """
     Checks for new cameras and sends a text message if any are found.
     """
@@ -30,8 +30,9 @@ def camera_check(target_condition=None):
         if found:
             cameras = [f"condition {x['condition']} @ {x['price']}"
                         for x in found]
-            response = text_message(debug=True,
-                                    message=f"Camera(s) found! {cameras}")
+            response = text_message(debug=debug,
+                                    message=(f"Camera(s) found! {cameras} "
+                                        "wexphotovideo.com/used-dslrs"))
             logging.debug(found)
             logging.info(f"Text message sent: {response.json()['body']}")
         else:
@@ -61,6 +62,7 @@ def create_schedule(job, *args, interval=15, units='minutes', **kwargs):
 
 if __name__ == '__main__':
     create_schedule(camera_check,
+                    # debug=True,  # for test purposes only
                     # target_condition=['9+', '8'],  # for test purposes only
                     # interval=15,  # for test purposes only
                     # units='seconds')  # for test purposes only
