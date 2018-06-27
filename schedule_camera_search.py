@@ -2,6 +2,7 @@
 Scheduling of camera checking.
 """
 import logging
+from logging.handlers import RotatingFileHandler
 import time
 
 from requests.exceptions import ReadTimeout, ConnectionError, HTTPError
@@ -11,32 +12,39 @@ from camera_search import find_cameras, write_found_cameras
 from text_request import text_message
 import instance.config as config
 
+log_stream_handler = logging.StreamHandler()
+log_file_handler = RotatingFileHandler('logs/camera_search.log',
+                                       maxBytes=10485760,  # 10MB
+                                       backupCount=2)
+logging.basicConfig(handlers=(log_stream_handler, log_file_handler),
+                    level=logging.INFO,
+                    format="%(asctime)s:%(levelname)s:%(message)s")
 
-def camera_check():
+
+def camera_check(target_condition=None):
     """
     Checks for new cameras and sends a text message if any are found.
     """
     try:
-        found = find_cameras(target_condition=['9+', '9<'])
-        # found = find_cameras(target_condition=['6', '8']) # for testing
+        found = find_cameras(target_condition)
         if found:
             cameras = [f"condition {x['condition']} @ {x['price']}"
                         for x in found]
             response = text_message(debug=True,
                                     message=f"Camera(s) found! {cameras}")
-            print(found)
-            print(response.json()['body'])
+            logging.debug(found)
+            logging.info(f"Text message sent: {response.json()['body']}")
         else:
-            # log check
-            print("Found nothing...")
+            logging.info("Found nothing...")
     except (ConnectionError, ReadTimeout, HTTPError) as e:
-        print(e)
-        # log this
+        logging.exception(e)
     else:
-        # write id of camera to external file so message is not sent again
-        found_cids = [x['href'] for x in found]
-        for c in found_cids:
-            write_found_cameras(cid=c, filepath=config.file_location)
+        if found:
+            # write id of camera to external file so message is not sent again
+            found_cids = [x['href'] for x in found]
+            for c in found_cids:
+                write_found_cameras(cid=c, filepath=config.file_location)
+            logging.info(f'New found cameras written to file: {found_cids}')
 
 
 def create_schedule(job, *args, interval=15, units='minutes', **kwargs):
@@ -53,8 +61,10 @@ def create_schedule(job, *args, interval=15, units='minutes', **kwargs):
 
 if __name__ == '__main__':
     create_schedule(camera_check,
-                    # interval=15, # for test purposes only
+                    # target_condition=['9+', '8'],  # for test purposes only
+                    # interval=15,  # for test purposes only
                     # units='seconds')  # for test purposes only
+                    target_condition=['9+', '9'],
                     interval=30,
                     units='minutes')
 
