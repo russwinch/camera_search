@@ -7,7 +7,7 @@ import requests
 import instance.config as config
 
 
-def find_cameras(target_condition=['9+']):
+def find_cameras(target_condition=None):
     """
     Find cameras in a webpage and determine if they match the condition.
 
@@ -62,6 +62,6 @@ def write_found_cameras(cid=None, filepath=None):
 
 
 if __name__ == '__main__':
-    found = find_cameras(target_condition=['9+', '9<', '9-'])
+    found = find_cameras(target_condition=['9+', '9'])
     if found:
         print(found)

@@ -32,7 +32,7 @@ def camera_check(target_condition=None, debug=False):
                         for x in found]
             response = text_message(debug=debug,
                                     message=(f"Camera(s) found! {cameras} "
-                                        "wexphotovideo.com/used-dslrs"))
+                                             "wexphotovideo.com/used-dslrs"))
             logging.debug(found)
             logging.info(f"Text message sent: {response.json()['body']}")
         else:
