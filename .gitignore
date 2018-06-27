@@ -55,4 +55,4 @@ instance/
 .pytest_cache/
 
 # exported data
-*.txt
+found_cameras.txt
