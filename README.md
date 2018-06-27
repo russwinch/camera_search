@@ -1,15 +1,15 @@
 Camera Finder
 ------
 
-Scrapes www.wexphotovideo.com looking for used Canon 5D Mk III's and
+Scrapes www.wexphotovideo.com on a schedule, looking for used Canon 5D Mk III's and
 sends a text message if found.
 
 Requires a Twilio account, project and phone number.
 
 
-*instance/config.py* should contain the following:
+*instance/config.py* should be added, containing the following:
 
-file_location = 'found_cameras.txt'  # file for previously identified cameras
+    file_location = 'found_cameras.txt'  # file for previously identified cameras
 
     class live():
         account_sid = 'Twilio live SID'
