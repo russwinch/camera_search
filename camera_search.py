@@ -42,12 +42,15 @@ def _check_found_cameras(cid=None, filepath=None):
     :cid: the url of the camera, used as it's unique id
     :filepath: the local file where previously identified cameras are recorded
     """
-    with open(filepath, mode='r') as f:
-        found = False
-        for line in f:
-            if line.strip() == cid:
-                found = True
-        return found
+    try:
+        with open(filepath, mode='r') as f:
+            found = False
+            for line in f:
+                if line.strip() == cid:
+                    found = True
+            return found
+    except FileNotFoundError:
+        pass
 
 
 def write_found_cameras(cid=None, filepath=None):
